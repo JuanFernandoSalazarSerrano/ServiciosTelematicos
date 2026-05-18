@@ -1,0 +1,130 @@
+services:
+  dd-agent:
+    image: registry.datadoghq.com/agent:7
+    container_name: dd-agent
+    environment:
+      DD_API_KEY: ${DD_API_KEY}
+      DD_SITE: us5.datadoghq.com
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+      DD_ENV: dev
+      DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_APM_RECEIVER_SOCKET: /var/run/datadog/apm.socket
+      DD_DOGSTATSD_SOCKET: /var/run/datadog/dsd.socket
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_AUTO_MULTI_LINE_DETECTION: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_CONTAINER_EXCLUDE_LOGS: name:dd-agent
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - telematicosnetwork
+
+  dd-agent-runonce:
+    image: alpine:3.20
+    container_name: dd-agent-runonce
+    environment:
+      DD_APM_INSTRUMENTATION_LIBRARIES: java:1,python:4,js:5,php:1,dotnet:3,ruby:2
+      DD_APM_INSTRUMENTATION_ENABLED: docker
+      DD_NO_AGENT_INSTALL: "true"
+    command:
+      - /bin/sh
+      - -c
+      - apk add --no-cache bash curl && bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
+    depends_on:
+      - dd-agent
+    networks:
+      - telematicosnetwork
+
+  mysql-db-container:
+    image: db-mysql:0
+    build:
+      context: ./database
+    container_name: mysql-db-container
+    environment:
+      MYSQL_ROOT_PASSWORD: fede
+    ports:
+      - "30306:3306"
+    networks:
+      - telematicosnetwork
+
+  server1:
+    image: api-springboot:0
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: server1
+    environment:
+      DB_URL: jdbc:mysql://mysql-db-container:3306/financeinformationdb
+      DB_USERNAME: root
+      DB_PASSWORD: fede
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql-db-container
+    networks:
+      - telematicosnetwork
+
+  server2:
+    image: api-springboot:0
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: server2
+    environment:
+      SERVER_PORT: "8001"
+      DB_URL: jdbc:mysql://mysql-db-container:3306/financeinformationdb
+      DB_USERNAME: root
+      DB_PASSWORD: fede
+    depends_on:
+      - mysql-db-container
+    networks:
+      - telematicosnetwork
+
+  server3:
+    image: api-springboot:0
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: server3
+    environment:
+      SERVER_PORT: "8002"
+      DB_URL: jdbc:mysql://mysql-db-container:3306/financeinformationdb
+      DB_USERNAME: root
+      DB_PASSWORD: fede
+    depends_on:
+      - mysql-db-container
+    networks:
+      - telematicosnetwork
+
+  haproxy:
+    image: haproxy:2.6
+    build:
+      context: ./loadbalancer
+    container_name: haproxy
+    ports:
+      - "8080:80"
+      - "8404:8404"
+    volumes:
+      - ./loadbalancer/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    labels:
+      com.datadoghq.ad.checks: |
+        {"haproxy":{"init_config":{},"instances":[{"openmetrics_endpoint":"http://%%host%%:8404/metrics","use_openmetrics":"true"}]}}
+      com.datadoghq.ad.logs: |
+        [{"source":"haproxy","service":"haproxy"}]
+    depends_on:
+      - server1
+      - server2
+      - server3
+    networks:
+      - telematicosnetwork
+
+networks:
+  telematicosnetwork:
+    external: true
+    name: telematicosnetwork

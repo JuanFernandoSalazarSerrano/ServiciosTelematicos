@@ -1,0 +1,156 @@
+config:
+  target: "http://haproxy"
+  phases:
+    - name: "warmup"
+      duration: 30
+      arrivalRate: 2
+    - name: "steady"
+      duration: 60
+      arrivalRate: 5
+    - name: "spike"
+      duration: 30
+      arrivalRate: 10
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Monitoring endpoints"
+    flow:
+      - get:
+          url: "/api/health"
+      - get:
+          url: "/api/metrics"
+      - get:
+          url: "/api/system"
+      - get:
+          url: "/api/stats"
+
+  - name: "Clients CRUD"
+    flow:
+      - post:
+          url: "/api/clients"
+          json:
+            firstName: "Client{{ $randomString(5) }}"
+            lastName: "Test{{ $randomString(5) }}"
+            email: "client{{ $randomNumber(1000,9999) }}@example.com"
+            phone: "555-{{ $randomNumber(1000,9999) }}"
+            city: "Bogota"
+          capture:
+            - json: "$.clientId"
+              as: "clientId"
+      - get:
+          url: "/api/clients/{{ clientId }}"
+      - put:
+          url: "/api/clients/{{ clientId }}"
+          json:
+            firstName: "Client{{ $randomString(5) }}"
+            lastName: "Updated{{ $randomString(5) }}"
+            email: "client{{ $randomNumber(1000,9999) }}@example.com"
+            phone: "555-{{ $randomNumber(1000,9999) }}"
+            city: "Medellin"
+      - get:
+          url: "/api/clients"
+      - delete:
+          url: "/api/clients/{{ clientId }}"
+
+  - name: "Stocks CRUD"
+    flow:
+      - post:
+          url: "/api/stocks"
+          json:
+            symbol: "SYM{{ $randomString(4) }}"
+            companyName: "Company {{ $randomString(6) }}"
+            currentPrice: 125.50
+            sector: "Technology"
+          capture:
+            - json: "$.stockId"
+              as: "stockId"
+      - get:
+          url: "/api/stocks/{{ stockId }}"
+      - put:
+          url: "/api/stocks/{{ stockId }}"
+          json:
+            symbol: "SYM{{ $randomString(4) }}"
+            companyName: "Company {{ $randomString(6) }}"
+            currentPrice: 130.25
+            sector: "Technology"
+      - get:
+          url: "/api/stocks"
+      - delete:
+          url: "/api/stocks/{{ stockId }}"
+
+  - name: "Portfolio flow"
+    flow:
+      - post:
+          url: "/api/clients"
+          json:
+            firstName: "Port{{ $randomString(5) }}"
+            lastName: "User{{ $randomString(5) }}"
+            email: "portfolio{{ $randomNumber(1000,9999) }}@example.com"
+            phone: "555-{{ $randomNumber(1000,9999) }}"
+            city: "Cali"
+          capture:
+            - json: "$.clientId"
+              as: "clientId"
+      - post:
+          url: "/api/stocks"
+          json:
+            symbol: "PRT{{ $randomString(4) }}"
+            companyName: "Portfolio {{ $randomString(6) }}"
+            currentPrice: 95.10
+            sector: "Finance"
+          capture:
+            - json: "$.stockId"
+              as: "stockId"
+      - post:
+          url: "/api/portfolios"
+          json:
+            clientId: "{{ clientId }}"
+            stockId: "{{ stockId }}"
+            sharesOwned: 10
+            purchasePrice: 90.00
+            purchaseDate: "2026-05-01"
+          capture:
+            - json: "$.portfolioId"
+              as: "portfolioId"
+      - get:
+          url: "/api/portfolios/client/{{ clientId }}"
+      - put:
+          url: "/api/portfolios/{{ portfolioId }}"
+          json:
+            clientId: "{{ clientId }}"
+            stockId: "{{ stockId }}"
+            sharesOwned: 15
+            purchasePrice: 92.50
+            purchaseDate: "2026-05-02"
+      - delete:
+          url: "/api/portfolios/{{ portfolioId }}"
+      - delete:
+          url: "/api/clients/{{ clientId }}"
+      - delete:
+          url: "/api/stocks/{{ stockId }}"
+
+  - name: "Failure endpoints"
+    flow:
+      - get:
+          url: "/api/failures/bad-request"
+      - get:
+          url: "/api/failures/not-found"
+      - get:
+          url: "/api/failures/unavailable"
+      - get:
+          url: "/api/failures/timeout?seconds=2"
+
+  - name: "Ejecutar prueba Artillery de carga alta"
+    flow:
+      - loop:
+          - get:
+              url: "/api/health"
+          - get:
+              url: "/api/clients"
+          - get:
+              url: "/api/stocks"
+          - get:
+              url: "/api/portfolios"
+        count: 10
