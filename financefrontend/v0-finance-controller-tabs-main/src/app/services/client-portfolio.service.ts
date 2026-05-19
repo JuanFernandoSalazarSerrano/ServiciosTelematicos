@@ -77,9 +77,9 @@ interface StockApi {
   providedIn: 'root',
 })
 export class ClientPortfolioService {
-  private readonly clientsUrl = 'http://localhost:8080/api/clients';
-  private readonly portfoliosUrl = 'http://localhost:8080/api/portfolios';
-  private readonly stocksUrl = 'http://localhost:8080/api/stocks';
+  private readonly clientsUrl = 'http://54.211.223.150:8080/api/clients';
+  private readonly portfoliosUrl = 'http://54.211.223.150:8080/api/portfolios';
+  private readonly stocksUrl = 'http://54.211.223.150:8080/api/stocks';
 
   constructor(private http: HttpClient) {}
 

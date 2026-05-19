@@ -31,7 +31,7 @@ interface ClientApi {
   providedIn: 'root',
 })
 export class ClientService {
-  private readonly apiUrl = 'http://localhost:8080/api/clients';
+  private readonly apiUrl = 'http://54.211.223.150:8080/api/clients';
 
   constructor(private http: HttpClient) {}
 

@@ -18,7 +18,7 @@ export interface Stock {
   providedIn: 'root',
 })
 export class StockService {
-  private readonly apiUrl = 'http://localhost:8080/api/stocks';
+  private readonly apiUrl = 'http://54.211.223.150:8080/api/stocks';
 
   constructor(private http: HttpClient) {}
 

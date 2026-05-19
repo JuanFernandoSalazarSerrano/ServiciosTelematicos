@@ -17,6 +17,7 @@ services:
       DD_CONTAINER_EXCLUDE_LOGS: name:dd-agent
     volumes:
       - /var/run/datadog:/var/run/datadog
+      - /opt/datadog-agent/run:/opt/datadog-agent/run
       - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc/:/host/proc/:ro
@@ -126,5 +127,4 @@ services:
 
 networks:
   telematicosnetwork:
-    external: true
     name: telematicosnetwork

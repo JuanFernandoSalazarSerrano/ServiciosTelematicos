@@ -13,7 +13,7 @@ export interface FailureResult {
   providedIn: 'root',
 })
 export class FailureService {
-  private readonly apiUrl = 'http://localhost:8080/api/failures';
+  private readonly apiUrl = 'http://54.211.223.150:8080/api/failures';
 
   constructor(private http: HttpClient) {}
 

@@ -73,6 +73,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class AppComponent {
   tabs = [
+    { route: '/', label: 'Home' },
     { route: '/stocks', label: 'Stocks' },
     { route: '/clients', label: 'Clients' },
     { route: '/portfolios', label: 'Portfolios' },

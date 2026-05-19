@@ -34,7 +34,7 @@ export interface MonitoringResponse {
   providedIn: 'root',
 })
 export class MonitoringService {
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = 'http://54.211.223.150:8080/api';
 
   constructor(private http: HttpClient) {}
 

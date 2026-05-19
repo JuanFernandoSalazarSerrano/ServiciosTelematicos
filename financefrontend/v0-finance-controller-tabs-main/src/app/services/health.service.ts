@@ -10,7 +10,7 @@ export interface HealthResponse {
   providedIn: 'root',
 })
 export class HealthService {
-  private readonly apiUrl = 'http://localhost:8080/api/health-text';
+  private readonly apiUrl = 'http://54.211.223.150:8080/api/health-text';
 
   constructor(private http: HttpClient) {}
 

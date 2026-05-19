@@ -18,7 +18,7 @@ export interface Portfolio {
   providedIn: 'root',
 })
 export class PortfolioService {
-  private readonly apiUrl = 'http://localhost:8080/api/portfolios';
+  private readonly apiUrl = 'http://54.211.223.150:8080/api/portfolios';
 
   constructor(private http: HttpClient) {}
 
