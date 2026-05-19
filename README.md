@@ -68,8 +68,8 @@ balanceador HAProxy, observabilidad Datadog y frontend Angular.
 - Datadog dashboard: https://p.us5.datadoghq.com/sb/54e2ed29-4ed7-11f1-b594-c2747b0094e9-926c2792e62a214e7ee4852525de9479
 - http://amzn-s3-angular-front.s3-website-us-east-1.amazonaws.com
 
-  ## Lista de Endpoints
-  GET /api/clients
+## Lista de Endpoints
+GET /api/clients
 GET /api/clients/{id}
 POST /api/clients
 PUT /api/clients/{id}
