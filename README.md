@@ -112,3 +112,4 @@ no need for fuzzing ;)
 	cd telematicosdocker
 	docker compose down
 	```
+ (todos los servicios aws han sido detenidos por motivos de costos)
